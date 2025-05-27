@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { venues } from './utils';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay } from 'swiper/modules';
+import { Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
+import 'swiper/css/effect-fade';
 import { tabs } from './utils';
 import { MapPin, Car, Plane, Train, BusFront } from 'lucide-react';
 
@@ -25,7 +26,7 @@ export default function LandingPage() {
 const AboutUs = () => {
     return (
         <div class="flex flex-col md:flex-row  w-fit gap-16 items-center justify-center">
-            <img src="images/venueImage1.jpg"
+            <img src="images/venueImage1.webp"
                 alt="Decorative Flower" className='w-[300px] h-[400px]' />
             <div class="relative max-w-[550px] p-5">
                 <div class="text-2xl text-gray-900 mb-4 leading-snug flex flex-col gap-3">
@@ -52,28 +53,38 @@ const AboutUs = () => {
 
 const OurVenues = () => {
     return (
-        <div className='flex flex-col gap-3'>
+        <div className='flex flex-col gap-3 w-full max-w-[100vw] overflow-hidden'>
             <h2 className="text-2xl font-bold text-center">Our Venues</h2>
-            <div className="flex align-center mb-4">
+            <div className="flex align-center mb-4 w-full overflow-hidden">
                 <Swiper
-                    spaceBetween={80} // Adjust gap between slides
-                    slidesPerView={1} // Show 2 slides at a time
+                    spaceBetween={80}
+                    slidesPerView={1}
                     loop={true}
+                    speed={800}
                     autoplay={{
-                        delay: 3000,
+                        delay: 5000,
                         disableOnInteraction: false,
+                        pauseOnMouseEnter: true,
                     }}
                     modules={[Autoplay]}
-                    className="w-[1500px] flex justify-center"
+                    className="w-full max-w-[100vw]"
+                    cssMode={true}
+                    grabCursor={true}
+                    style={{
+                        '--swiper-wrapper-transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
                 >
                     {venues?.map((venue, index) => (
-                        <SwiperSlide key={index}>
-                            <VenuCard
-                                name={venue.name}
-                                description={venue.description}
-                                details={venue.details}
-                                image={venue.image}
-                            />
+                        <SwiperSlide key={index} className="w-full">
+                            <div className="relative w-full flex justify-center">
+                                <div className="absolute inset-0 bg-black opacity-0 transition-opacity duration-800 ease-in-out swiper-slide-active:opacity-0 swiper-slide-prev:opacity-50"></div>
+                                <VenuCard
+                                    name={venue.name}
+                                    description={venue.description}
+                                    details={venue.details}
+                                    image={venue.image}
+                                />
+                            </div>
                         </SwiperSlide>
                     ))}
                 </Swiper>
@@ -83,16 +94,41 @@ const OurVenues = () => {
 }
 
 const VenuCard = ({ name, description, details, image }) => {
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const [imageSrc, setImageSrc] = useState(null);
+
+    useEffect(() => {
+        const img = new Image();
+        img.src = image;
+        img.onload = () => {
+            setImageSrc(image);
+            setImageLoaded(true);
+        };
+    }, [image]);
+
     return (
         <div className="relative w-[500px] mx-auto">
-            {/* Image */}
-            <img
-                src={image}
-                alt="Terrace Garden"
-                className="w-full h-[280px] object-cover rounded-lg shadow-lg"
-            />
+            {/* Image Container */}
+            <div className="relative w-full h-[280px] rounded-lg shadow-lg overflow-hidden">
+                {/* Loading Placeholder */}
+                <div 
+                    className={`absolute inset-0 bg-gray-200 transition-opacity duration-300 ${
+                        imageLoaded ? 'opacity-0' : 'opacity-100'
+                    }`}
+                />
+                
+                {/* Actual Image */}
+                <img
+                    src={imageSrc || image}
+                    alt={name}
+                    className={`w-full h-full object-cover transition-opacity duration-300 ${
+                        imageLoaded ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    onLoad={() => setImageLoaded(true)}
+                />
+            </div>
 
-            {/* Overlapping Card - Slightly touching image */}
+            {/* Overlapping Card */}
             <div className="absolute top-1/2 right-[-160px] -translate-y-1/2 bg-[#fdf5dc] border-b-8 border-[#480d1b] w-[300px] p-4 shadow-xl z-10 rounded-lg">
                 <h2 className="text-lg font-bold text-gray-800 mb-2">{name}</h2>
                 <p className="text-gray-700 text-xs mb-4">
@@ -107,7 +143,6 @@ const VenuCard = ({ name, description, details, image }) => {
                 </div>
             </div>
         </div>
-
     );
 };
 
@@ -152,61 +187,93 @@ export function Gallery() {
 }
 
 const LandingSection = () => {
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const [imageSrc, setImageSrc] = useState(null);
+    
+    useEffect(() => {
+        const img = new Image();
+        img.src = "../images/landingImage3.webp";
+        img.onload = () => {
+            setImageSrc(img.src);
+            setImageLoaded(true);
+        };
+        return () => {
+            img.onload = null;
+        };
+    }, []);
+
     const backgroundStyle = useMemo(() => ({
-        backgroundImage: `url("/images/landingImage3.jpg")`,
+        backgroundImage: imageSrc ? `url(${imageSrc})` : 'none',
         filter: 'brightness(0.5)',
         width: '100vw',
         height: '100vh',
         top: 0,
-        left: 0
-    }), []);
+        left: 0,
+        transition: 'all 1s ease-in-out',
+        opacity: imageLoaded ? 1 : 0,
+        backgroundColor: '#000',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        transform: imageLoaded ? 'scale(1)' : 'scale(1.1)',
+    }), [imageLoaded, imageSrc]);
 
     return (
         <div className="relative h-screen w-full overflow-hidden" style={{ margin: 0, padding: 0 }}>
-            {/* Background Image */}
+            {/* Background Image with placeholder */}
             <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={backgroundStyle}
             />
 
-            {/* Gold circular border
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-full h-full max-w-6xl max-h-6xl border-8 border-yellow-500 rounded-full opacity-20"></div>
-      </div> */}
+            {/* Overlay gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50" />
 
             {/* Header */}
-            <header className="absolute top-0 w-full bg-gradient-to-b from-burgundy-900 to-transparent p-4 z-10">
+            <header className="absolute top-0 w-full bg-gradient-to-b from-black/80 to-transparent p-6 z-10 transition-all duration-500">
                 <div className="container mx-auto flex justify-between items-center">
-                    <div className="text-white font-serif text-3xl italic">
+                    <div className="text-white font-serif text-4xl italic transform hover:scale-105 transition-transform duration-300">
                         <span className="text-yellow-300">D</span>evi <span className="text-yellow-300">C</span>onventions
                     </div>
-                    <button className="text-white p-2 rounded-full">
+                    <button className="text-white p-2 rounded-full hover:bg-white/10 transition-colors duration-300">
                         {/* <Menu size={24} /> */}
                     </button>
                 </div>
             </header>
 
             {/* Content */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-                <h1 className="text-4xl md:text-6xl font-serif text-slate-200 mb-4">
-                    Celebrate Life's<br />
-                    Finest Moments in Grandeur!
-                </h1>
-                <p className="text-xl md:text-2xl text-white mb-6">
-                    Devi Convention - Best Luxury Convention in<br />
-                    <span className="text-yellow-300">Kondapur, Hyderabad.</span>
-                </p>
-                <button className="bg-yellow-300 text-black px-6 py-2 rounded-full hover:bg-yellow-500 transition-colors">
-                    Reservations Open
-                </button>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-1">
+                <div className="space-y-6 transform transition-all duration-700 delay-300"
+                     style={{
+                         opacity: imageLoaded ? 1 : 0,
+                         transform: imageLoaded ? 'translateY(0)' : 'translateY(20px)'
+                     }}>
+                    <h1 className="text-5xl md:text-6xl font-serif text-white mb-4 leading-tight">
+                        Celebrate Life's{" "}
+                        <span className="text-yellow-300">Finest Moments</span><br />
+                        in Grandeur!
+                    </h1>
+                    <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">
+                        Devi Convention - Best Luxury Convention in<br />
+                        <span className="text-yellow-300 font-semibold">Kondapur, Hyderabad.</span>
+                    </p>
+                    <div className="flex gap-4 justify-center">
+                        <button className="bg-yellow-300 text-black px-8 py-3 rounded-full hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105 hover:shadow-lg text-lg font-semibold">
+                            Reservations Open
+                        </button>
+                        {/* <button className="border-2 border-white text-white px-8 py-3 rounded-full hover:bg-white/10 transition-all duration-300 transform hover:scale-105 text-lg font-semibold">
+                            View Gallery
+                        </button> */}
+                    </div>
+                </div>
             </div>
 
-            {/* Bottom Logo */}
-            {/* <div className="absolute bottom-4 right-4">
-        <div className="text-white font-serif text-2xl italic">
-          <span className="text-yellow-300">M</span>aaya
-        </div>
-      </div> */}
+            {/* Scroll Indicator */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+                <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
+                    <div className="w-1 h-3 bg-white/50 rounded-full mt-2 animate-scroll"></div>
+                </div>
+            </div>
         </div>
     );
 };
