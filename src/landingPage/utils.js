@@ -1,27 +1,27 @@
 export const venues = [
     {
         name: "Convention Hall",
-        description: "Ideal for Get togethers, Birthday Parties, Sundower Events... etc",
+        description: "Ideal for Get togethers, Birthday Parties, Sundower Events.. etc",
         details: [{ name: "16,000sft" }, { name: "Upto 15000 pax" }],
-        image: "images/venueImage1.webp"
+        image: "images/compressed.jpg"
     },
     {
         name: "Suite Rooms",
         description: "Indulge in pinnacle of luxury and comfort",
         details: [{ name: "4 Master Suites" }, { name: "5 Club Rooms" }],
-        image: "images/venueImage2.webp"
+        image: "images/compressed.jpg"
     },
     {
         name: "Convention Hall",
         description: "Ideal for Get togethers, Birthday Parties, Sundower Events... etc",
         details: [{ name: "16,000sft" }, { name: "Upto 15000 pax" }],
-        image: "images/venueImage1.webp"
+        image: "images/compressed.jpg"
     },
     {
         name: "Suite Rooms",
         description: "Indulge in pinnacle of luxury and comfort",
         details: [{ name: "4 Master Suites" }, { name: "5 Club Rooms" }],
-        image: "images/venueImage2.webp"
+        image: "images/compressed.jpg"
     }
 
 ]
